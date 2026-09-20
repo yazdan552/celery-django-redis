@@ -38,6 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'django_celery_results',
+
     'accounts',
 
 ]
@@ -136,9 +138,32 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 
 # ==================== Celery ====================
-CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/0')
-CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://localhost:6379/1')
+# CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/0')
+# CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://localhost:6379/1')
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_ACCEPT_CONTENT = ['json']
+
+
+# ==================== Celery Routing ====================
+CELERY_TASK_DEFAULT_QUEUE = 'default'
+
+CELERY_TASK_ROUTES = {
+    'accounts.tasks.process_video': {'queue': 'heavy'},
+    'accounts.tasks.send_email': {'queue': 'default'},
+    'accounts.tasks.resize_image': {'queue': 'default'},
+}
+
+
+# ==================== Celery ====================
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/0')
+
+# ← این خط رو عوض کن
+CELERY_RESULT_BACKEND = 'django-db'
+
+# ← این رو اضافه کن (نوع نتیجه)
+CELERY_RESULT_EXTENDED = True
+
+# ← این هم اضافه کن (پاکسازی خودکار بعد از ۱ روز)
+CELERY_RESULT_EXPIRES = 86400   # 1 روز به ثانیه

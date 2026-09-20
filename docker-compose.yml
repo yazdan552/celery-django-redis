@@ -12,10 +12,11 @@ services:
     depends_on:
       - redis
 
+  # ==================== Worker پیش‌فرض ====================
   celery:
     build: .
     container_name: my_celery
-    command: celery -A celery_app worker -l info
+    command: celery -A celery_app worker -Q default -l info --concurrency=4
     volumes:
       - .:/app
     env_file:
@@ -23,6 +24,19 @@ services:
     depends_on:
       - redis
 
+  # ==================== Worker تسک‌های سنگین ====================
+  celery-heavy:
+    build: .
+    container_name: my_celery_heavy
+    command: celery -A celery_app worker -Q heavy -l info --concurrency=2
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      - redis
+
+  # ==================== Beat ====================
   celery-beat:
     build: .
     container_name: my_celery_beat
@@ -34,6 +48,7 @@ services:
     depends_on:
       - redis
 
+  # ==================== Flower ====================
   flower:
     build: .
     container_name: my_flower
@@ -47,7 +62,9 @@ services:
     depends_on:
       - redis
       - celery
+      - celery-heavy
 
+  # ==================== Redis ====================
   redis:
     image: redis:7-alpine
     container_name: my_redis

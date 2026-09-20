@@ -15,4 +15,9 @@ app.conf.beat_schedule = {
         'task': 'accounts.tasks.check_system_status',
         'schedule': 15.0,
     },
+    'daily-report': {
+        'task': 'accounts.tasks.my_first_task',
+        'schedule': crontab(hour=8, minute=0),  # هر روز ۸ صبح
+        'args': ('admin',),  # آرگومان‌ها
+    },
 }
